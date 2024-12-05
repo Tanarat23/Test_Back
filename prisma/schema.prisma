@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Documents {
+  id              Int      @id @default(autoincrement())
+  documentNumber  String   @unique
+  issueDate       DateTime @default(now())
+  dueDate         DateTime @updatedAt
+  customerName    String
+  billingAddress  String
+  shippingAddress String
+  referenceNumber String?
+  currency        String
+  remark          String?
+
+  items   Document_Items[]
+  summary Document_Summary?
+}
+
+model Document_Items {
+  id                  Int    @id @default(autoincrement())
+  documentId          Int
+  productCode         String
+  quantity            Int
+  weight              Float
+  unitPrice           Float
+  unit                Unit
+  priceBeforeDiscount Float
+  discountRate        Float
+  netPrice            Float
+
+  document Documents @relation(fields: [documentId], references: [id])
+}
+
+model Document_Summary {
+  id            Int   @id @default(autoincrement())
+  documentId    Int   @unique
+  subtotal      Float
+  discountTotal Float
+  netTotal      Float
+  vat           Float
+  grandTotal    Float
+
+  document Documents @relation(fields: [documentId], references: [id])
+}
+
+enum Unit {
+  PIECE // ชิ้น
+  GRAM // กรัม
+}
